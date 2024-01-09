@@ -1,4 +1,7 @@
 package tacos.web;
+/*
+import javax.jms.JMSException;
+*/
 import javax.validation.Valid;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +17,10 @@ import org.springframework.web.bind.support.SessionStatus;
 import tacos.entity.TacoOrder;
 import tacos.entity.User;
 import tacos.data.OrderRepository;
+import tacos.rabbit.recive.RabbitOrderReciver;
+import tacos.rabbit.send.RabbitOrderMessagingService;
+/*import tacos.jms_service.recive.JMSOrderReceiver;
+import tacos.jms_service.send.JmsOrderMessagingService;*/
 
 @Controller
 @RequestMapping("/orders")
@@ -22,29 +29,34 @@ public class OrderController {
 
   private OrderRepository orderRepo;
 
-  public OrderController(OrderRepository orderRepo) {
+  private RabbitOrderMessagingService rabbitService;
+
+  private RabbitOrderReciver rabbitOrderReciver;
+
+/*  private JmsOrderMessagingService messagingService;
+
+  private JMSOrderReceiver messagingServiceRecive;*/
+
+ /* public OrderController(OrderRepository orderRepo,
+                         JmsOrderMessagingService messagingService,
+                         JMSOrderReceiver messagingServiceRecive) {
     this.orderRepo = orderRepo;
+    this.messagingService = messagingService;
+    this.messagingServiceRecive = messagingServiceRecive;
+  }*/
+
+  public OrderController(
+          OrderRepository orderRepo,
+          RabbitOrderMessagingService rabbitService,
+          RabbitOrderReciver rabbitOrderReciver) {
+    this.orderRepo = orderRepo;
+    this.rabbitService = rabbitService;
+    this.rabbitOrderReciver = rabbitOrderReciver;
   }
 
   @GetMapping("/current")
   public String orderForm(@AuthenticationPrincipal User user,
       @ModelAttribute TacoOrder order) {
-    if (order.getDeliveryName() == null) {
-      order.setDeliveryName(user.getFullname());
-    }
-    if (order.getDeliveryStreet() == null) {
-      order.setDeliveryStreet(user.getStreet());
-    }
-    if (order.getDeliveryCity() == null) {
-      order.setDeliveryCity(user.getCity());
-    }
-    if (order.getDeliveryState() == null) {
-      order.setDeliveryState(user.getState());
-    }
-    if (order.getDeliveryZip() == null) {
-      order.setDeliveryZip(user.getZip());
-    }
-
     return "orderForm";
   }
 
@@ -59,8 +71,16 @@ public class OrderController {
 
     order.setUser(user);
 
+/*
+    messagingService.sendOrder(order);
+*/
     orderRepo.save(order);
+    rabbitService.sendOrder(order);
     sessionStatus.setComplete();
+/*
+    System.out.println(rabbitOrderReciver.receiveOrder().toString());
+*/
+
 
     return "redirect:/";
   }

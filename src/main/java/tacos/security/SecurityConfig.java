@@ -19,24 +19,12 @@ public class SecurityConfig {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
-  
-  @Bean
-  public UserDetailsService userDetailsService(UserRepository userRepo) {
-    return username -> {
-      User user = userRepo.findByUsername(username);
-      if (user != null) {
-        return user;
-      }
-      throw new UsernameNotFoundException(
-                      "User '" + username + "' not found");
-    };
-  }
+
   
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
       .authorizeRequests()
-        .mvcMatchers("/design", "/orders").hasRole("USER")
         .anyRequest().permitAll()
 
       .and()

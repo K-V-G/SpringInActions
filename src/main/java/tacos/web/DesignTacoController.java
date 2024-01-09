@@ -71,12 +71,6 @@ public class DesignTacoController {
     return new Taco();
   }
 
-  @ModelAttribute(name = "user")
-  public User user(Principal principal) {
-	    String username = principal.getName();
-	    User user = userRepo.findByUsername(username);
-	    return user;
-  }
 
   @GetMapping
   public String showDesignForm() {

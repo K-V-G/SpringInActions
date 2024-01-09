@@ -24,8 +24,4 @@ public class IngredientController {
     public Ingredient saveIngredient(@RequestBody Ingredient ingredient) {
         return ingredientRepository.save(ingredient);
     }
-
-    @
-
-
 }
